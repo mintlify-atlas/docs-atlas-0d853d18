@@ -1,0 +1,83 @@
+{
+  "projectType": "saas",
+  "projectName": "ElectroHome",
+  "projectDescription": "ElectroHome is a Django-based e-commerce platform for electronics and home appliances, featuring Google OAuth authentication, Wompi payment processing, and Cloudinary media storage.",
+  "theme": "almond",
+  "primaryColor": "#1E4D8C",
+  "lightColor": "#3A7BD5",
+  "darkColor": "#0F2A52",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": ["introduction", "quickstart", "deployment"]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/product-catalog",
+              "features/shopping-cart",
+              "features/checkout",
+              "features/user-accounts"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/wompi-payments",
+              "integrations/google-oauth",
+              "integrations/cloudinary"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/environment-variables",
+              "configuration/settings",
+              "configuration/database"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": ["api/overview"]
+          },
+          {
+            "group": "Endpoints",
+            "pages": [
+              "api/products",
+              "api/orders",
+              "api/users"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Product catalog with electronics and home appliance listings",
+    "Shopping cart and checkout flow",
+    "Wompi payment gateway integration for Colombian market",
+    "Google OAuth social authentication via django-allauth",
+    "Cloudinary-based media storage for product images",
+    "Django admin panel for store management",
+    "WhiteNoise static file serving",
+    "Production deployment on Render with PostgreSQL via dj-database-url"
+  ],
+  "publicApiSurface": [
+    "GET /admin/ - Django admin panel",
+    "GET /accounts/ - Authentication endpoints (allauth)",
+    "GET /products/ - Product listing and detail views",
+    "POST /cart/ - Shopping cart management",
+    "POST /checkout/ - Order placement and payment",
+    "GET /orders/ - Order history",
+    "POST /payments/wompi/ - Wompi payment webhook"
+  ]
+}
