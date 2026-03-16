@@ -1,0 +1,130 @@
+---
+title: "Settings"
+description: "Overview of ElectroHome's Django settings structure and key configuration options"
+---
+
+ElectroHome uses a split settings layout to keep development and production configuration separate while sharing common defaults.
+
+## Settings file structure
+
+| File | Purpose |
+|---|---|
+| `electrohome/settings.py` | Base development settings — used by default when running locally |
+| `electrohome/Settings/base.py` | Shared base configuration imported by production settings |
+| `electrohome/Settings/production.py` | Production overrides — imports from `base.py` and adds security hardening, external services, and environment-variable-driven config |
+
+## Selecting the settings module
+
+<Tabs>
+  <Tab title="Development">
+    Run the development server without specifying a settings module. Django picks up `electrohome/settings.py` automatically via the `DJANGO_SETTINGS_MODULE` default set in `manage.py`.
+
+    ```bash
+    python manage.py runserver
+    ```
+  </Tab>
+  <Tab title="Production">
+    Pass `--settings` explicitly for every management command in production. The `build.sh` script does this for `collectstatic` and `migrate`.
+
+    ```bash
+    python manage.py collectstatic --no-input --settings=electrohome.settings.production
+    python manage.py migrate --settings=electrohome.settings.production
+    ```
+  </Tab>
+</Tabs>
+
+## Key development settings (`settings.py`)
+
+### INSTALLED_APPS
+
+```python
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+]
+```
+
+Production appends `cloudinary_storage` and `cloudinary` for media file handling.
+
+### MIDDLEWARE
+
+```python
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+```
+
+### DATABASES
+
+Development uses SQLite with zero configuration:
+
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+```
+
+See the [Database](/configuration/database) page for the production PostgreSQL setup.
+
+### AUTH_PASSWORD_VALIDATORS
+
+```python
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+]
+```
+
+### Internationalisation
+
+| Setting | Value |
+|---|---|
+| `LANGUAGE_CODE` | `'en-us'` |
+| `TIME_ZONE` | `'UTC'` |
+| `USE_I18N` | `True` |
+| `USE_TZ` | `True` |
+
+## Key production settings (`Settings/production.py`)
+
+### Security
+
+| Setting | Value | Purpose |
+|---|---|---|
+| `CSRF_COOKIE_SECURE` | `True` | Send CSRF cookie over HTTPS only |
+| `SESSION_COOKIE_SECURE` | `True` | Send session cookie over HTTPS only |
+| `SECURE_SSL_REDIRECT` | `True` | Redirect all HTTP requests to HTTPS |
+| `SECURE_PROXY_SSL_HEADER` | `('HTTP_X_FORWARDED_PROTO', 'https')` | Trust the proxy's SSL header |
+
+### Static files
+
+| Setting | Value |
+|---|---|
+| `STATIC_URL` | Inherited from base (`'static/'`) |
+| `STATICFILES_STORAGE` | `'whitenoise.storage.CompressedStaticFilesStorage'` |
+
+### Media files
+
+| Setting | Value |
+|---|---|
+| `DEFAULT_FILE_STORAGE` | `'cloudinary_storage.storage.MediaCloudinaryStorage'` |
+
+Media uploads are served via Cloudinary in production. Configure the required credentials with the `CLOUDINARY_*` environment variables — see [Environment variables](/configuration/environment-variables).
+
+<Note>
+`SITE_ID = 4` is set in `production.py` and is consumed by `django.contrib.sites`. The `build.sh` script also configures the Site object in the database (domain `ecommerce-electrohome-render.onrender.com`) after each deploy to keep the sites framework in sync with the live domain.
+</Note>

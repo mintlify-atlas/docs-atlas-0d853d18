@@ -1,0 +1,111 @@
+---
+title: "Orders"
+description: "Order management endpoints for placing and viewing orders"
+---
+
+Order and cart functionality covers the full purchase flow: adding items to the cart, checking out, and reviewing past orders.
+
+<Warning>
+  Cart, checkout, and order history endpoints require an authenticated session. Unauthenticated requests are redirected to `/accounts/login/`. See [Users](/api/users) for authentication routes.
+</Warning>
+
+## Route summary
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/cart/` | View current cart |
+| `POST` | `/cart/add/<product_id>/` | Add a product to the cart |
+| `POST` | `/cart/remove/<item_id>/` | Remove an item from the cart |
+| `GET` | `/checkout/` | Checkout form |
+| `POST` | `/checkout/` | Submit order and initiate Wompi payment |
+| `GET` | `/orders/` | Order history |
+| `GET` | `/orders/<order_id>/` | Order detail |
+| `POST` | `/payments/wompi/webhook/` | Wompi payment webhook |
+
+---
+
+## Cart
+
+### View cart
+
+`GET /cart/`
+
+Returns an HTML page showing all items currently in the user's cart, quantities, unit prices, and the cart total.
+
+### Add item to cart
+
+`POST /cart/add/<product_id>/`
+
+Adds a product to the current session's cart.
+
+<ParamField path="product_id" type="integer" required>
+  The numeric ID of the product to add.
+</ParamField>
+
+A valid CSRF token must be included in the request. On success the user is redirected back to the cart or the referring product page.
+
+### Remove item from cart
+
+`POST /cart/remove/<item_id>/`
+
+Removes a specific line item from the cart.
+
+<ParamField path="item_id" type="integer" required>
+  The numeric ID of the cart line item to remove.
+</ParamField>
+
+---
+
+## Checkout
+
+### Checkout form
+
+`GET /checkout/`
+
+Returns an HTML page with the checkout form. Displays the cart summary and collects shipping and billing details.
+
+### Submit order
+
+`POST /checkout/`
+
+Validates the submitted checkout form, creates an order record, and redirects the user to the Wompi payment page to complete payment.
+
+A valid CSRF token must be included. On validation failure, the checkout form is re-rendered with error messages.
+
+---
+
+## Order history
+
+### List orders
+
+`GET /orders/`
+
+Returns an HTML page listing all past orders for the authenticated user, with order number, date, status, and total.
+
+### Order detail
+
+`GET /orders/<order_id>/`
+
+Returns an HTML page with full details for a single order.
+
+<ParamField path="order_id" type="integer" required>
+  The numeric ID of the order.
+</ParamField>
+
+Only the order's owner can view its detail page. Other authenticated users receive a 403 or 404 response.
+
+---
+
+## Wompi payment webhook
+
+`POST /payments/wompi/webhook/`
+
+Receives asynchronous payment event notifications from Wompi. This endpoint is called by Wompi's servers after a payment is processed — it is not intended to be called by end users.
+
+When a payment event is received, the application updates the corresponding order's status (e.g. from `pending` to `paid` or `failed`).
+
+<Note>
+  Webhook payloads from Wompi include a signature that must be verified before processing. The application uses `WOMPI_PRIVATE_KEY` (set via environment variable) to validate the integrity of incoming webhook requests. Never process a webhook event without first verifying its signature.
+</Note>
+
+The Wompi environment is configured via the `WOMPI_ENVIRONMENT` setting (`test` or `production`). The sandbox API URL is `https://sandbox.wompi.co/v1`.

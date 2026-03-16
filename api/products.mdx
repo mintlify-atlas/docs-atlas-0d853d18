@@ -1,0 +1,80 @@
+---
+title: "Products"
+description: "Product catalog endpoints for browsing electronics and home appliances"
+---
+
+The product catalog is browsable without authentication. All routes return server-rendered HTML pages.
+
+## Route summary
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/products/` | List all products with optional filtering |
+| `GET` | `/products/<slug>/` | Product detail page |
+| `GET` | `/products/category/<category>/` | Products filtered by category |
+
+---
+
+## List products
+
+`GET /products/`
+
+Returns the product listing page. Supports optional query parameters to filter or search the catalog.
+
+### Query parameters
+
+<ParamField query="search" type="string">
+  Free-text search term. Filters products by name or description.
+</ParamField>
+
+<ParamField query="category" type="string">
+  Filter products by category slug (e.g. `televisions`, `refrigerators`). Equivalent to browsing `/products/category/<category>/`.
+</ParamField>
+
+### Response
+
+Returns an HTML page rendered by the product list Django template, containing a grid of matching products with names, images, and prices.
+
+---
+
+## Product detail
+
+`GET /products/<slug>/`
+
+Returns the detail page for a single product.
+
+### URL parameters
+
+<ParamField path="slug" type="string" required>
+  The URL-friendly identifier for the product (e.g. `samsung-65-qled-tv`).
+</ParamField>
+
+### Response
+
+Returns an HTML page with full product details: name, description, images, price, and an add-to-cart form.
+
+---
+
+## Products by category
+
+`GET /products/category/<category>/`
+
+Returns the product listing page pre-filtered to a single category.
+
+### URL parameters
+
+<ParamField path="category" type="string" required>
+  The category identifier to filter by (e.g. `televisions`, `washing-machines`, `laptops`).
+</ParamField>
+
+### Response
+
+Returns an HTML page with the same layout as the product list, showing only products in the specified category.
+
+---
+
+## Product images
+
+<Note>
+  Product images are served via Cloudinary CDN in production. Image URLs are managed automatically through the `cloudinary_storage` backend (`DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'`). Images are optimized and delivered from Cloudinary's global edge network.
+</Note>

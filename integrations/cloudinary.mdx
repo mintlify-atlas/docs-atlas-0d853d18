@@ -1,0 +1,60 @@
+---
+title: "Cloudinary media storage"
+description: "ElectroHome uses Cloudinary to store and serve product images with automatic optimization and CDN delivery."
+---
+
+Cloudinary is a cloud-based media management platform. ElectroHome uses it as the default file storage backend for all uploaded media, including product images. Cloudinary provides automatic image optimization, format conversion, and global CDN delivery out of the box.
+
+## Environment variables
+
+| Variable | Description |
+|---|---|
+| `CLOUDINARY_CLOUD_NAME` | Your Cloudinary cloud name, shown in the dashboard. |
+| `CLOUDINARY_API_KEY` | API key from the Cloudinary dashboard. |
+| `CLOUDINARY_API_SECRET` | API secret from the Cloudinary dashboard. Keep this secret. |
+
+## Django configuration
+
+The following settings in `production.py` activate Cloudinary as the media storage backend:
+
+```python
+INSTALLED_APPS += ['cloudinary_storage', 'cloudinary']
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+}
+```
+
+With `DEFAULT_FILE_STORAGE` set to `MediaCloudinaryStorage`, all `ImageField` and `FileField` uploads are automatically sent to Cloudinary instead of the local filesystem.
+
+## Setup
+
+<Steps>
+  <Step title="Create a Cloudinary account">
+    Go to [cloudinary.com](https://cloudinary.com) and sign up for a free account.
+  </Step>
+
+  <Step title="Get your credentials">
+    After logging in, open the **Dashboard**. Your **Cloud Name**, **API Key**, and **API Secret** are displayed in the API Keys section at the top of the page.
+  </Step>
+
+  <Step title="Set the environment variables">
+    Add the three credentials to your deployment environment:
+
+    ```bash
+    CLOUDINARY_CLOUD_NAME=your-cloud-name
+    CLOUDINARY_API_KEY=123456789012345
+    CLOUDINARY_API_SECRET=your-api-secret
+    ```
+  </Step>
+
+  <Step title="Upload product images through Django admin">
+    With the environment variables set and the app deployed, log in to the Django admin at `/admin/` and add or edit products. Image fields will automatically upload to Cloudinary and store the resulting URL in the database.
+  </Step>
+</Steps>
+
+<Note>
+Cloudinary handles image resizing, format conversion, and optimization automatically. You can apply transformations (such as resizing or cropping) by appending Cloudinary URL parameters, without storing multiple image variants.
+</Note>

@@ -1,0 +1,70 @@
+---
+title: "Introduction"
+description: "ElectroHome is a Django-based e-commerce platform for electronics and home appliances, featuring Google OAuth authentication, Wompi payment processing, and Cloudinary media storage."
+---
+
+## What is ElectroHome?
+
+ElectroHome is a full-featured online store built with Django, designed to sell electronics and home appliances to customers in the Colombian market. It provides a complete shopping experience — from browsing products to completing secure payments via Wompi — while offering store administrators powerful tools to manage inventory, orders, and customers.
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Set up and run ElectroHome locally in minutes
+  </Card>
+  <Card title="Deployment" icon="cloud" href="/deployment">
+    Deploy to production on Render with PostgreSQL
+  </Card>
+  <Card title="Core Features" icon="store" href="/features/product-catalog">
+    Explore the product catalog, cart, and checkout flows
+  </Card>
+  <Card title="Integrations" icon="plug" href="/integrations/wompi-payments">
+    Wompi payments, Google OAuth, and Cloudinary
+  </Card>
+</CardGroup>
+
+## Key features
+
+<CardGroup cols={2}>
+  <Card title="Product catalog" icon="tag">
+    Organize and display electronics and home appliance listings with images, descriptions, and pricing
+  </Card>
+  <Card title="Shopping cart" icon="cart-shopping">
+    Persistent cart management with real-time quantity and total calculation
+  </Card>
+  <Card title="Wompi payments" icon="credit-card">
+    Secure payment processing via Wompi, tailored for the Colombian market
+  </Card>
+  <Card title="Google OAuth" icon="google">
+    One-click sign-in with Google via django-allauth — no password required
+  </Card>
+  <Card title="Cloudinary media" icon="image">
+    Cloud-hosted product images with automatic optimization and CDN delivery
+  </Card>
+  <Card title="Django admin" icon="shield">
+    Full-featured admin panel for managing products, orders, and users
+  </Card>
+</CardGroup>
+
+## Technology stack
+
+| Layer | Technology |
+|---|---|
+| Web framework | Django 5.2 |
+| Database (dev) | SQLite |
+| Database (prod) | PostgreSQL via `dj-database-url` |
+| Authentication | django-allauth + Google OAuth |
+| Payments | Wompi |
+| Media storage | Cloudinary |
+| Static files | WhiteNoise |
+| Hosting | Render |
+
+## Architecture overview
+
+ElectroHome follows Django's standard MTV (Model-Template-View) pattern:
+
+- **Models** define products, orders, cart items, and user profiles
+- **Views** handle request routing, business logic, and context preparation
+- **Templates** render HTML for the storefront and admin interfaces
+- **Settings** are split across `base.py`, `local.py`, and `production.py` for environment-specific configuration
+
+The production deployment uses environment variables for all secrets and external service credentials, with HTTPS enforced via `SECURE_SSL_REDIRECT`.

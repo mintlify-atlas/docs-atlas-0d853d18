@@ -1,0 +1,47 @@
+---
+title: "API overview"
+description: "Overview of the ElectroHome web application routes and admin interface"
+---
+
+ElectroHome is a server-rendered Django application. There is no separate REST API — the primary interface is HTML views rendered by Django templates and returned directly to the browser.
+
+All routes return full HTML pages unless noted otherwise. Interactive state (cart contents, authentication) is managed via server-side sessions.
+
+## Base URL
+
+In production, all routes are served over HTTPS from the application's root domain:
+
+```
+https://<your-domain>/
+```
+
+Local development uses `http://127.0.0.1:8000/` by default.
+
+## URL namespaces
+
+| Prefix | Description |
+|---|---|
+| `/admin/` | Django admin panel for store management |
+| `/accounts/` | Authentication — login, logout, signup, and Google OAuth (django-allauth) |
+| `/products/` | Product catalog — browse, search, and view product details |
+| `/cart/` | Shopping cart — add, remove, and view cart items |
+| `/checkout/` | Order placement and Wompi payment initiation |
+| `/orders/` | Order history and per-order detail (authenticated users only) |
+
+## Security
+
+<Note>
+  CSRF protection is enforced on all POST requests. The `CsrfViewMiddleware` is active in all environments. Every form submission must include a valid CSRF token, either via Django's `{% csrf_token %}` template tag or the `X-CSRFToken` request header.
+</Note>
+
+In production, additional security headers are applied:
+
+- `CSRF_COOKIE_SECURE = True` — CSRF cookie is only sent over HTTPS
+- `SESSION_COOKIE_SECURE = True` — session cookie is only sent over HTTPS
+- `SECURE_SSL_REDIRECT = True` — all HTTP traffic is redirected to HTTPS
+
+## Admin panel
+
+<Tip>
+  The Django admin panel at `/admin/` provides a full management interface for products, orders, users, and site configuration. Log in with a superuser account to manage the store without writing code.
+</Tip>

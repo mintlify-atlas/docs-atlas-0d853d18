@@ -1,0 +1,76 @@
+---
+title: "User accounts"
+description: "How customers create accounts, sign in, and manage their profile and order history."
+---
+
+ElectroHome uses [django-allauth](https://django-allauth.readthedocs.io/) to handle authentication. Customers can register with an email and password, or sign in instantly with Google OAuth.
+
+## Creating an account
+
+There are two ways to create an account:
+
+<CardGroup cols={2}>
+  <Card title="Email and password" icon="envelope">
+    Register with a name, email address, and password. The account is active immediately — no email verification step is required.
+  </Card>
+  <Card title="Google OAuth" icon="google">
+    Sign in with an existing Google account. django-allauth creates a linked ElectroHome account automatically on first login.
+  </Card>
+</CardGroup>
+
+<Tip>
+  Google OAuth is the fastest way to sign in. Because `SOCIALACCOUNT_AUTO_SIGNUP = True` and `SOCIALACCOUNT_LOGIN_ON_GET = True`, clicking **Continue with Google** redirects you directly to Google and back — no extra form to fill out.
+</Tip>
+
+## Allauth configuration
+
+The following allauth settings are active in production:
+
+| Setting | Value | Effect |
+|---|---|---|
+| `ACCOUNT_EMAIL_VERIFICATION` | `'none'` | Email addresses are not verified — accounts activate immediately |
+| `SOCIALACCOUNT_AUTO_SIGNUP` | `True` | First Google login creates an account without showing a signup form |
+| `SOCIALACCOUNT_LOGIN_ON_GET` | `True` | The OAuth flow starts on a GET request, skipping the intermediate confirmation page |
+| `SOCIALACCOUNT_QUERY_EMAIL` | `True` | Requests the user's email from Google during OAuth |
+| `SOCIALACCOUNT_STORE_TOKENS` | `True` | OAuth tokens are stored for potential future API calls |
+
+## Account features
+
+Once signed in, customers have access to:
+
+- **Order history** — a list of past orders with status, items, and totals
+- **Saved addresses** — delivery addresses stored from previous checkouts
+- **Profile management** — update name and email address
+- **Password change** — for email/password accounts only
+
+## Google OAuth scopes
+
+ElectroHome requests the following Google OAuth scopes:
+
+```python
+# production.py
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}
+```
+
+Only `profile` and `email` are requested — no access to Gmail, Drive, or other Google services.
+
+## Admin user management
+
+Store administrators manage all user accounts from the Django admin panel at `/admin/users/`.
+
+From the admin panel you can:
+
+- View and search all registered accounts
+- Grant or revoke staff and superuser permissions
+- Disable accounts by setting `is_active = False`
+- Inspect linked social accounts (Google OAuth connections)
+- Reset passwords on behalf of users
+
+Only users with `is_superuser = True` can modify other users' permissions in the admin panel.

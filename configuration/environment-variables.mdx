@@ -1,0 +1,79 @@
+---
+title: "Environment variables"
+description: "Complete reference for all environment variables used by ElectroHome"
+---
+
+ElectroHome reads configuration from environment variables at runtime. In development, you can place these in a `.env` file at the project root. In production, set them directly in your hosting platform's environment configuration.
+
+<Warning>
+Never commit your `.env` file to version control. Add it to `.gitignore` immediately. Exposing secrets like `SECRET_KEY` or payment credentials can compromise your application and users.
+</Warning>
+
+## Application
+
+| Variable | Description | Required | Example |
+|---|---|---|---|
+| `SECRET_KEY` | Django's cryptographic signing key | Yes | `django-insecure-abc123...` |
+| `DEBUG` | Enable debug mode and detailed error pages | No | `False` |
+| `ALLOWED_HOSTS` | Comma-separated list of permitted hostnames | No (defaults to `*`) | `electrohome.com,www.electrohome.com` |
+| `CSRF_TRUSTED_ORIGINS` | Comma-separated list of trusted origins for CSRF | No (defaults to `''`) | `https://electrohome.com` |
+
+## Database
+
+| Variable | Description | Required | Example |
+|---|---|---|---|
+| `DATABASE_URL` | Full connection URL for the production database | Yes (production) | `postgres://user:password@host:5432/dbname` |
+
+## Email
+
+| Variable | Description | Required | Example |
+|---|---|---|---|
+| `EMAIL_HOST_USER` | Gmail address used to send transactional email | No (defaults to `''`) | `noreply@electrohome.com` |
+| `EMAIL_HOST_PASSWORD` | Gmail app password for SMTP authentication | No (defaults to `''`) | `abcd efgh ijkl mnop` |
+
+## Payments
+
+| Variable | Description | Required | Example |
+|---|---|---|---|
+| `WOMPI_PUBLIC_KEY` | Wompi public key for client-side integration | No (defaults to `''`) | `pub_test_abc123` |
+| `WOMPI_PRIVATE_KEY` | Wompi private key for server-side API calls | No (defaults to `''`) | `prv_test_xyz789` |
+| `WOMPI_ENVIRONMENT` | Wompi environment to target | No (defaults to `test`) | `production` |
+
+<Note>
+`WOMPI_ENVIRONMENT` defaults to `'test'`, which points to the sandbox API at `https://sandbox.wompi.co/v1`. Set it to `production` and update `WOMPI_API_URL` when you are ready to process real payments.
+</Note>
+
+## Media
+
+| Variable | Description | Required | Example |
+|---|---|---|---|
+| `CLOUDINARY_CLOUD_NAME` | Your Cloudinary cloud name | Yes (production) | `my-cloud` |
+| `CLOUDINARY_API_KEY` | Cloudinary API key | Yes (production) | `123456789012345` |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret | Yes (production) | `abcdefghijklmnopqrstuvwxyz` |
+
+## Sample `.env` file
+
+```bash
+# Application
+SECRET_KEY=your-secret-key-here
+DEBUG=False
+ALLOWED_HOSTS=electrohome.com,www.electrohome.com
+CSRF_TRUSTED_ORIGINS=https://electrohome.com,https://www.electrohome.com
+
+# Database
+DATABASE_URL=postgres://user:password@host:5432/electrohome_db
+
+# Email
+EMAIL_HOST_USER=noreply@electrohome.com
+EMAIL_HOST_PASSWORD=your-gmail-app-password
+
+# Payments
+WOMPI_PUBLIC_KEY=pub_test_abc123
+WOMPI_PRIVATE_KEY=prv_test_xyz789
+WOMPI_ENVIRONMENT=test
+
+# Media
+CLOUDINARY_CLOUD_NAME=my-cloud
+CLOUDINARY_API_KEY=123456789012345
+CLOUDINARY_API_SECRET=abcdefghijklmnopqrstuvwxyz
+```

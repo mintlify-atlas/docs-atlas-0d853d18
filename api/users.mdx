@@ -1,0 +1,97 @@
+---
+title: "Users"
+description: "User authentication and account management endpoints provided by django-allauth"
+---
+
+Authentication is handled by [django-allauth](https://allauth.org/). All routes are mounted under the `/accounts/` prefix. Both standard email/password login and Google OAuth are supported.
+
+## Route summary
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/accounts/login/` | Login page |
+| `POST` | `/accounts/login/` | Submit login credentials |
+| `GET` | `/accounts/logout/` | Log out and clear session |
+| `GET` | `/accounts/signup/` | Registration form |
+| `POST` | `/accounts/signup/` | Submit registration |
+| `GET` | `/accounts/google/login/` | Initiate Google OAuth flow |
+| `GET` | `/accounts/google/login/callback/` | Google OAuth callback |
+
+---
+
+## Email/password authentication
+
+### Login page
+
+`GET /accounts/login/`
+
+Returns the HTML login form.
+
+### Submit login
+
+`POST /accounts/login/`
+
+Validates the submitted credentials and creates an authenticated session. On success, redirects to the next URL or the default landing page. On failure, re-renders the login form with an error message.
+
+A valid CSRF token must be included.
+
+### Logout
+
+`GET /accounts/logout/`
+
+Clears the current session and redirects to the login page or the site homepage.
+
+### Registration form
+
+`GET /accounts/signup/`
+
+Returns the HTML registration form for creating a new account.
+
+### Submit registration
+
+`POST /accounts/signup/`
+
+Creates a new user account with the provided credentials and logs the user in. Redirects to the default post-signup destination on success.
+
+A valid CSRF token must be included.
+
+---
+
+## Google OAuth
+
+### Initiate Google login
+
+`GET /accounts/google/login/`
+
+Redirects the user to Google's OAuth 2.0 authorization endpoint. The configured OAuth scopes are `profile` and `email`.
+
+Because `SOCIALACCOUNT_LOGIN_ON_GET = True`, no intermediate confirmation page is shown — the redirect to Google happens immediately.
+
+### OAuth callback
+
+`GET /accounts/google/login/callback/`
+
+Google redirects the user here after they authorize the application. django-allauth exchanges the authorization code for an access token, retrieves the user's Google profile, and either creates a new account or logs in the existing one.
+
+Relevant allauth settings active in production:
+
+| Setting | Value | Effect |
+|---|---|---|
+| `SOCIALACCOUNT_AUTO_SIGNUP` | `True` | A new local account is created automatically on first Google login — no separate signup step required |
+| `ACCOUNT_EMAIL_VERIFICATION` | `'none'` | Email verification is skipped; users can log in immediately after registration |
+| `SOCIALACCOUNT_LOGIN_ON_GET` | `True` | The OAuth redirect is triggered on a GET request without requiring a POST confirmation |
+
+---
+
+## Admin user management
+
+The Django admin panel provides full user management at `/admin/auth/user/`. Superusers can:
+
+- Create, edit, and deactivate user accounts
+- Assign staff or superuser privileges
+- Reset passwords
+- View login history and linked social accounts
+
+<Note>
+  Social account associations (e.g. linked Google accounts) are managed under `/admin/socialaccount/socialaccount/` in the admin panel, provided by the `allauth.socialaccount` app.
+</Note>

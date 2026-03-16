@@ -1,0 +1,62 @@
+---
+title: "Wompi payments"
+description: "Wompi is the Colombian payment gateway used by ElectroHome to process credit/debit cards, PSE bank transfers, and other local payment methods."
+---
+
+Wompi is a Colombian payment gateway that supports multiple local payment methods including credit and debit cards, PSE (bank transfers), Nequi, and Bancolombia. ElectroHome uses Wompi to handle all payment processing.
+
+## Environment variables
+
+| Variable | Description |
+|---|---|
+| `WOMPI_PUBLIC_KEY` | Public key from the Wompi dashboard. Safe to use in client-side code. |
+| `WOMPI_PRIVATE_KEY` | Private key from the Wompi dashboard. Must be kept secret. |
+| `WOMPI_ENVIRONMENT` | Set to `test` for sandbox or `production` for live payments. |
+
+<Warning>
+Never commit your `WOMPI_PRIVATE_KEY` to version control. Store it as an environment variable or in a secrets manager.
+</Warning>
+
+## API URL
+
+The sandbox API base URL used by ElectroHome is:
+
+```bash
+https://sandbox.wompi.co/v1
+```
+
+This is configured directly in `production.py`:
+
+```python
+WOMPI_API_URL = 'https://sandbox.wompi.co/v1'
+```
+
+## Setup
+
+<Steps>
+  <Step title="Create a Wompi account">
+    Go to [wompi.co](https://wompi.co) and register for an account. You will need to provide business information to get approved.
+  </Step>
+
+  <Step title="Get your API keys">
+    Once your account is approved, log in to the Wompi dashboard and navigate to **Developer** > **API Keys**. Copy both the public key and private key.
+  </Step>
+
+  <Step title="Set environment variables">
+    Add the following environment variables to your deployment environment:
+
+    ```bash
+    WOMPI_PUBLIC_KEY=pub_test_xxxxxxxxxxxxxxxxxx
+    WOMPI_PRIVATE_KEY=prv_test_xxxxxxxxxxxxxxxxxx
+    WOMPI_ENVIRONMENT=test
+    ```
+  </Step>
+
+  <Step title="Test with the sandbox environment">
+    Keep `WOMPI_ENVIRONMENT=test` while testing. Wompi provides test card numbers in their documentation that you can use to simulate successful and failed payments without real charges.
+  </Step>
+</Steps>
+
+<Note>
+When you are ready to go live, update `WOMPI_ENVIRONMENT` to `production` and replace your test API keys with the production keys from the Wompi dashboard. The `WOMPI_API_URL` will also need to be updated to the production endpoint (`https://production.wompi.co/v1`).
+</Note>

@@ -1,0 +1,75 @@
+---
+title: "Checkout"
+description: "The full checkout flow from cart review through Wompi payment and order confirmation."
+---
+
+Checkout guides the customer from a finalized cart to a confirmed order. It collects shipping information, processes payment via Wompi, and records the completed order.
+
+## Checkout flow
+
+<Steps>
+  <Step title="Review cart">
+    The checkout begins with a summary of all cart items, quantities, and the cart subtotal. Customers can return to the cart to make changes before continuing.
+  </Step>
+  <Step title="Enter shipping information">
+    Customers fill in their delivery details:
+
+    - Full name
+    - Street address
+    - City and department (Colombia)
+    - Phone number
+    - Email address
+
+    Authenticated users can pre-fill this form from their saved address.
+  </Step>
+  <Step title="Select payment method">
+    ElectroHome currently supports card payments through Wompi. The customer selects their payment method and is presented with the Wompi payment widget.
+  </Step>
+  <Step title="Complete payment via Wompi">
+    The Wompi widget handles card entry and 3DS verification. On success, Wompi sends a confirmation back to ElectroHome via webhook or redirect.
+
+    ```python
+    # production.py
+    WOMPI_PUBLIC_KEY = os.environ.get('WOMPI_PUBLIC_KEY', '')
+    WOMPI_PRIVATE_KEY = os.environ.get('WOMPI_PRIVATE_KEY', '')
+    WOMPI_ENVIRONMENT = os.environ.get('WOMPI_ENVIRONMENT', 'test')
+    WOMPI_API_URL = 'https://sandbox.wompi.co/v1'
+    ```
+  </Step>
+  <Step title="Order confirmation">
+    After a successful payment, the customer sees an order confirmation page with:
+
+    - Order reference number
+    - Itemized summary
+    - Shipping address
+    - Estimated delivery information
+
+    A confirmation email is sent via Gmail SMTP using the address configured in `EMAIL_HOST_USER`.
+  </Step>
+</Steps>
+
+## Wompi environments
+
+<Note>
+  Payment processing uses Wompi. The sandbox API base URL is `https://sandbox.wompi.co/v1`. The active environment is controlled by the `WOMPI_ENVIRONMENT` environment variable, which defaults to `test`.
+</Note>
+
+Wompi supports two environments:
+
+| Environment | `WOMPI_ENVIRONMENT` | API URL | Use case |
+|---|---|---|---|
+| Sandbox | `test` | `https://sandbox.wompi.co/v1` | Development and QA |
+| Production | `prod` | `https://production.wompi.co/v1` | Live transactions |
+
+Switch environments by updating the `WOMPI_ENVIRONMENT`, `WOMPI_PUBLIC_KEY`, and `WOMPI_PRIVATE_KEY` environment variables. No code changes are required.
+
+## Order recording
+
+Once Wompi confirms a successful transaction, ElectroHome:
+
+1. Creates an order record linked to the customer's account
+2. Decrements `stock_quantity` for each purchased product
+3. Clears the session cart
+4. Sends the confirmation email
+
+Failed or cancelled payments return the customer to the cart with an error message and leave stock unchanged.

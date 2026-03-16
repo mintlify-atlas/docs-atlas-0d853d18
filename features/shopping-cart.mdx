@@ -1,0 +1,47 @@
+---
+title: "Shopping cart"
+description: "How customers add items, manage quantities, and review totals before checking out."
+---
+
+The shopping cart lets customers collect products before purchasing. Items persist across page loads so customers can shop freely and return to their cart at any time.
+
+## Cart persistence
+
+The cart is tied to the user's Django session. Session data is stored server-side, so cart contents survive page refreshes and browser navigation within the same session. Authenticated users benefit from extended session lifetimes configured in `SESSION_COOKIE_SECURE = True` in production.
+
+## Cart workflow
+
+<Steps>
+  <Step title="Browse and add items">
+    From any product listing or detail page, click **Add to cart**. The item is added to the session-backed cart immediately, with a quantity of 1 by default.
+  </Step>
+  <Step title="View the cart">
+    Open the cart page to see all added items, their unit prices, selected quantities, and the running subtotal.
+  </Step>
+  <Step title="Update quantities">
+    Use the quantity input on the cart page to increase or decrease the number of units for any line item. The subtotal updates automatically.
+  </Step>
+  <Step title="Remove items">
+    Click **Remove** next to any line item to delete it from the cart. The cart total recalculates instantly.
+  </Step>
+  <Step title="Proceed to checkout">
+    When the cart contents look correct, click **Checkout** to move to the shipping and payment flow.
+  </Step>
+</Steps>
+
+## Cart totals
+
+The cart page displays a live breakdown of costs:
+
+| Line | Calculation |
+|---|---|
+| Item subtotal | `unit_price × quantity` for each line item |
+| Cart total | Sum of all item subtotals |
+| Shipping | Calculated at checkout based on delivery address |
+| Grand total | Cart total + shipping (shown at checkout) |
+
+All prices are displayed in Colombian pesos (COP).
+
+## Stock validation
+
+When a customer adds an item or adjusts a quantity, the cart checks the product's `stock_quantity` field. Requests that exceed available stock are rejected with an error message, preventing overselling.

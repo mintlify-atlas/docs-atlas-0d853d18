@@ -1,0 +1,69 @@
+---
+title: "Google OAuth"
+description: "Allow users to sign in with their Google account via django-allauth."
+---
+
+ElectroHome uses [django-allauth](https://django-allauth.readthedocs.io/) to support Google OAuth 2.0, letting users authenticate with their existing Google account instead of creating a separate password.
+
+## Django settings
+
+The following settings are configured in `production.py`:
+
+| Setting | Value | Description |
+|---|---|---|
+| `SOCIALACCOUNT_QUERY_EMAIL` | `True` | Request the user's email from Google. |
+| `SOCIALACCOUNT_EMAIL_REQUIRED` | `True` | Email is required to complete sign-in. |
+| `SOCIALACCOUNT_AUTO_SIGNUP` | `True` | Automatically create an account on first login. |
+| `ACCOUNT_EMAIL_VERIFICATION` | `'none'` | Skip email verification for social logins. |
+| `ACCOUNT_DEFAULT_HTTP_PROTOCOL` | `"https"` | Ensures redirect URIs use HTTPS. |
+| Google `SCOPE` | `['profile', 'email']` | Permissions requested from Google. |
+
+## Setup
+
+<Steps>
+  <Step title="Create a Google Cloud project">
+    Go to the [Google Cloud Console](https://console.cloud.google.com/) and create a new project, or select an existing one.
+  </Step>
+
+  <Step title="Enable the Google OAuth 2.0 API">
+    In your project, navigate to **APIs & Services** > **Library** and enable the **Google Identity** (or **OAuth 2.0**) API.
+  </Step>
+
+  <Step title="Create OAuth credentials">
+    Go to **APIs & Services** > **Credentials** and click **Create Credentials** > **OAuth client ID**. Select **Web application** as the application type. You will receive a **Client ID** and **Client Secret** — keep both.
+  </Step>
+
+  <Step title="Add authorized redirect URIs">
+    Under the OAuth client configuration, add your redirect URI. For a production deployment it will follow this pattern:
+
+    ```
+    https://yourdomain.com/accounts/google/login/callback/
+    ```
+
+    For local development:
+
+    ```
+    http://localhost:8000/accounts/google/login/callback/
+    ```
+  </Step>
+
+  <Step title="Configure in Django admin">
+    Log in to the Django admin at `/admin/` and navigate to **Social Accounts** > **Social Applications**. Click **Add Social Application** and fill in the following:
+
+    - **Provider**: Google
+    - **Name**: Google (or any label)
+    - **Client id**: your Google Client ID
+    - **Secret key**: your Google Client Secret
+    - **Sites**: move your site from *Available sites* to *Chosen sites*
+
+    Save the record.
+  </Step>
+</Steps>
+
+<Note>
+The Social Application must be configured in the Django admin for OAuth to work. The Client ID and Secret are stored in the database, not in environment variables.
+</Note>
+
+<Tip>
+`SOCIALACCOUNT_LOGIN_ON_GET = True` is already enabled in `production.py`. This allows the OAuth flow to start from a direct GET request to the login URL, providing a smoother user experience without an intermediate confirmation page.
+</Tip>

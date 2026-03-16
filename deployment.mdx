@@ -1,0 +1,108 @@
+---
+title: "Deployment"
+description: "Deploy ElectroHome to Render with a PostgreSQL database and Cloudinary media storage."
+---
+
+<Warning>
+  Never commit your `SECRET_KEY` to version control. Set it as an environment variable and ensure `DEBUG=False` in production. The production settings module sets `DEBUG = False` automatically.
+</Warning>
+
+## Prerequisites
+
+- A [Render](https://render.com) account
+- A PostgreSQL database provisioned on Render (or any provider that supplies a `DATABASE_URL`)
+- A [Cloudinary](https://cloudinary.com) account for media storage
+- A Gmail account (or SMTP provider) for transactional email
+- A [Wompi](https://wompi.co) account for payment processing
+
+## Build command
+
+Set the following as your **Build Command** in the Render service configuration. These are the exact commands from `build.sh`:
+
+```bash
+pip install -r requirements.txt
+python manage.py collectstatic --no-input --settings=electrohome.settings.production
+python manage.py migrate --settings=electrohome.settings.production
+```
+
+After migrating, `build.sh` also configures the Django Sites framework entry used for OAuth callbacks:
+
+```bash
+python manage.py shell --settings=electrohome.settings.production -c "
+from django.contrib.sites.models import Site
+site, _ = Site.objects.get_or_create(id=7)
+site.domain = 'ecommerce-electrohome-render.onrender.com'
+site.name = 'ElectroHome'
+site.save()
+print('Site configurado:', site.domain)
+"
+```
+
+## Start command
+
+Set your **Start Command** to your WSGI server of choice, for example:
+
+```bash
+gunicorn electrohome.wsgi:application
+```
+
+## Deployment steps
+
+<Steps>
+  <Step title="Create a Render Web Service">
+    In the Render dashboard, create a new **Web Service** pointing to your repository. Set the **Runtime** to Python.
+  </Step>
+
+  <Step title="Provision a PostgreSQL database">
+    Create a **PostgreSQL** database on Render. Copy the **Internal Database URL** — you will use it as the `DATABASE_URL` environment variable.
+  </Step>
+
+  <Step title="Configure environment variables">
+    Add the following environment variables in the Render service **Environment** tab.
+
+    **Core**
+
+    | Variable | Description |
+    |---|---|
+    | `SECRET_KEY` | Django secret key — generate a new one for production |
+    | `DATABASE_URL` | PostgreSQL connection string from Render |
+    | `ALLOWED_HOSTS` | Comma-separated list of allowed hostnames, e.g. `ecommerce-electrohome-render.onrender.com` |
+    | `CSRF_TRUSTED_ORIGINS` | Comma-separated list of trusted origins, e.g. `https://ecommerce-electrohome-render.onrender.com` |
+
+    **Email (Gmail SMTP)**
+
+    | Variable | Description |
+    |---|---|
+    | `EMAIL_HOST_USER` | Gmail address used as the sender |
+    | `EMAIL_HOST_PASSWORD` | Gmail app password (not your account password) |
+
+    **Wompi payments**
+
+    | Variable | Description |
+    |---|---|
+    | `WOMPI_PUBLIC_KEY` | Wompi public key |
+    | `WOMPI_PRIVATE_KEY` | Wompi private key |
+    | `WOMPI_ENVIRONMENT` | `test` or `prod` (defaults to `test`) |
+
+    **Cloudinary media storage**
+
+    | Variable | Description |
+    |---|---|
+    | `CLOUDINARY_CLOUD_NAME` | Your Cloudinary cloud name |
+    | `CLOUDINARY_API_KEY` | Cloudinary API key |
+    | `CLOUDINARY_API_SECRET` | Cloudinary API secret |
+  </Step>
+
+  <Step title="Set the build and start commands">
+    - **Build Command:** the commands listed in the [Build command](#build-command) section above
+    - **Start Command:** `gunicorn electrohome.wsgi:application`
+  </Step>
+
+  <Step title="Deploy">
+    Trigger a deploy from the Render dashboard or by pushing to your connected branch. Render will run the build script, apply migrations, and start the server.
+  </Step>
+</Steps>
+
+<Tip>
+  `SECURE_SSL_REDIRECT = True` is already enabled in `electrohome/Settings/production.py`, so all HTTP traffic is automatically redirected to HTTPS. Render terminates SSL at the edge and forwards the `X-Forwarded-Proto` header, which the production settings handle via `SECURE_PROXY_SSL_HEADER`.
+</Tip>

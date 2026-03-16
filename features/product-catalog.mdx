@@ -1,0 +1,65 @@
+---
+title: "Product catalog"
+description: "How ElectroHome organizes, displays, and manages product listings for electronics and home appliances."
+---
+
+The product catalog is the core of the ElectroHome storefront. It organizes listings into categories, displays product images via Cloudinary, and exposes browsing and search tools to customers.
+
+## Categories
+
+Products are grouped into two primary categories:
+
+- **Electronics** — phones, laptops, televisions, audio equipment, and accessories
+- **Home appliances** — refrigerators, washing machines, microwaves, and kitchen appliances
+
+Each category has its own listing page, making it easier for customers to narrow their browsing by product type.
+
+## Product fields
+
+Every product in the catalog carries the following data:
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | string | Display name of the product |
+| `description` | text | Full product description shown on the detail page |
+| `price` | decimal | Price in Colombian pesos (COP) |
+| `category` | foreign key | Electronics or home appliances |
+| `image` | file | Product photo stored on Cloudinary |
+| `stock_quantity` | integer | Number of units currently available |
+
+<Note>
+  Product images are stored on Cloudinary via `cloudinary_storage`. In production, `DEFAULT_FILE_STORAGE` is set to `cloudinary_storage.storage.MediaCloudinaryStorage`, so all uploaded images are served from Cloudinary's CDN rather than the local filesystem.
+</Note>
+
+## Browsing and search
+
+Customers can explore the catalog in several ways:
+
+<CardGroup cols={2}>
+  <Card title="Category pages" icon="tag">
+    Browse all products within a category from a dedicated listing page
+  </Card>
+  <Card title="Product detail" icon="circle-info">
+    View full description, high-resolution image, price, and stock status
+  </Card>
+  <Card title="Search" icon="magnifying-glass">
+    Find products by name or description using the site-wide search bar
+  </Card>
+  <Card title="Featured listings" icon="star">
+    Homepage highlights curated products from both categories
+  </Card>
+</CardGroup>
+
+## Managing products in the admin panel
+
+Store administrators manage the entire catalog through the Django admin panel at `/admin/`.
+
+From the admin panel you can:
+
+- Add, edit, and delete product listings
+- Upload or replace product images (automatically synced to Cloudinary)
+- Set and update stock quantities
+- Assign products to categories
+- Enable or disable listings without deleting them
+
+Only users with `is_staff = True` can access the admin panel. Use the `createsuperuser` management command to create the first admin account.

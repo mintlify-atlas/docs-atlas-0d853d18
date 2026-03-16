@@ -1,0 +1,87 @@
+---
+title: "Database"
+description: "Configure the database for development and production"
+---
+
+ElectroHome uses **SQLite** for local development and **PostgreSQL** in production. Switching between them requires only an environment variable — no code changes.
+
+## Development: SQLite
+
+SQLite is the default and requires no installation or configuration. The database file is created automatically the first time you run migrations.
+
+```python
+# electrohome/settings.py
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+```
+
+The file is stored at `BASE_DIR / 'db.sqlite3'` (i.e. the project root). To initialise the database, run:
+
+```bash
+python manage.py migrate
+```
+
+## Production: PostgreSQL
+
+Production settings use [`dj-database-url`](https://github.com/jazzband/dj-database-url) to parse a connection URL from the `DATABASE_URL` environment variable:
+
+```python
+# electrohome/Settings/production.py
+import dj_database_url
+
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600
+    )
+}
+```
+
+| Option | Value | Description |
+|---|---|---|
+| `DATABASE_URL` env var | `postgres://user:password@host:5432/dbname` | Full PostgreSQL connection string |
+| `conn_max_age` | `600` | Persistent connection lifetime in seconds (10 minutes) |
+
+<Tip>
+Use **Render's managed PostgreSQL** service for a zero-ops production database. After provisioning, copy the internal connection string into your service's `DATABASE_URL` environment variable. Render automatically handles backups, failover, and version upgrades.
+</Tip>
+
+## Running migrations
+
+<Tabs>
+  <Tab title="Development">
+    ```bash
+    # Create new migration files after model changes
+    python manage.py makemigrations
+
+    # Apply all pending migrations
+    python manage.py migrate
+    ```
+  </Tab>
+  <Tab title="Production">
+    The `build.sh` script runs migrations automatically on every deploy:
+
+    ```bash
+    python manage.py migrate --settings=electrohome.settings.production
+    ```
+
+    To run migrations manually against the production database:
+
+    ```bash
+    DATABASE_URL=postgres://... python manage.py migrate --settings=electrohome.settings.production
+    ```
+  </Tab>
+</Tabs>
+
+## Resetting the development database
+
+To start fresh in development, delete the SQLite file and re-run migrations:
+
+```bash
+rm db.sqlite3
+python manage.py migrate
+```
